@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type IProduct from "../../interfaces/IProduct";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -7,6 +7,9 @@ function AdminProduct() {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("default");
 
   useEffect(() => {
     const getAllProducts = async () => {
@@ -52,6 +55,40 @@ function AdminProduct() {
     }).format(price);
   };
 
+  const categories = useMemo(
+    () => ["all", ...new Set(products.map((item) => item.category))],
+    [products],
+  );
+
+  const filteredProducts = useMemo(() => {
+    let result = [...products];
+
+    if (searchKeyword.trim()) {
+      const keyword = searchKeyword.trim().toLowerCase();
+      result = result.filter(
+        (item) =>
+          item.name.toLowerCase().includes(keyword) ||
+          item.description.toLowerCase().includes(keyword),
+      );
+    }
+
+    if (categoryFilter !== "all") {
+      result = result.filter((item) => item.category === categoryFilter);
+    }
+
+    if (sortBy === "price-asc") {
+      result.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (sortBy === "price-desc") {
+      result.sort((a, b) => Number(b.price) - Number(a.price));
+    } else if (sortBy === "stock-asc") {
+      result.sort((a, b) => Number(a.quantity) - Number(b.quantity));
+    } else if (sortBy === "stock-desc") {
+      result.sort((a, b) => Number(b.quantity) - Number(a.quantity));
+    }
+
+    return result;
+  }, [categoryFilter, products, searchKeyword, sortBy]);
+
   if (loading)
     return (
       <div className="flex justify-center items-center h-64">
@@ -73,7 +110,7 @@ function AdminProduct() {
         <div>
           <h2 className="text-xl font-bold text-gray-800">Quản lý Sản phẩm</h2>
           <p className="text-sm text-gray-500 mt-1">
-            Tổng số: {products.length} sản phẩm
+            Hiển thị: {filteredProducts.length}/{products.length} sản phẩm
           </p>
         </div>
         <Link
@@ -96,6 +133,37 @@ function AdminProduct() {
           </svg>
           Thêm sản phẩm
         </Link>
+      </div>
+
+      <div className="p-4 border-b border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-3 bg-gray-50">
+        <input
+          value={searchKeyword}
+          onChange={(e) => setSearchKeyword(e.target.value)}
+          placeholder="Tìm theo tên hoặc mô tả..."
+          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        />
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+        >
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category === "all" ? "Tất cả danh mục" : category}
+            </option>
+          ))}
+        </select>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 bg-white"
+        >
+          <option value="default">Sắp xếp mặc định</option>
+          <option value="price-asc">Giá tăng dần</option>
+          <option value="price-desc">Giá giảm dần</option>
+          <option value="stock-asc">Kho tăng dần</option>
+          <option value="stock-desc">Kho giảm dần</option>
+        </select>
       </div>
 
       {/* Bảng dữ liệu */}
@@ -127,8 +195,8 @@ function AdminProduct() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {products &&
-              products.map((item: IProduct) => (
+            {filteredProducts &&
+              filteredProducts.map((item: IProduct) => (
                 <tr
                   key={item.id}
                   className="hover:bg-gray-50/50 transition-colors"
@@ -247,6 +315,11 @@ function AdminProduct() {
           </tbody>
         </table>
       </div>
+      {filteredProducts.length === 0 && (
+        <div className="p-8 text-center text-sm text-gray-500 border-t border-gray-100">
+          Không có sản phẩm phù hợp với bộ lọc hiện tại.
+        </div>
+      )}
     </div>
   );
 }

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import type IProduct from "../../interfaces/IProduct";
 import axios from "axios";
 import { useCart } from "./context/useCart";
+import { useWishlist } from "./context/useWishlist";
 
 function ProductDetail() {
   const { id } = useParams();
@@ -11,6 +12,8 @@ function ProductDetail() {
   const [loading, setloading] = useState<boolean>(true);
   const [quantity, setQuantity] = useState<number>(1);
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!id) return;
@@ -78,6 +81,20 @@ function ProductDetail() {
                     </svg>
                   </button>
                 </div>
+                {product && (
+                  <button
+                    onClick={() => toggleWishlist(product)}
+                    className={`absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-semibold ${
+                      isInWishlist(product.id)
+                        ? "bg-red-100 text-red-600"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {isInWishlist(product.id)
+                      ? "Trong Wishlist"
+                      : "Thêm Wishlist"}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -135,9 +152,11 @@ function ProductDetail() {
               </p>
 
               <div className="mb-8 flex items-center gap-6">
-                <div className={`flex items-center border rounded-xl overflow-hidden w-fit bg-white ${product?.quantity === 0 ? "border-gray-200 opacity-50" : "border-gray-300"}`}>
-                  <button 
-                    onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                <div
+                  className={`flex items-center border rounded-xl overflow-hidden w-fit bg-white ${product?.quantity === 0 ? "border-gray-200 opacity-50" : "border-gray-300"}`}
+                >
+                  <button
+                    onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
                     disabled={product?.quantity === 0}
                     className="w-12 h-10 flex items-center justify-center hover:bg-gray-50 text-gray-600 font-bold text-lg disabled:cursor-not-allowed"
                   >
@@ -146,9 +165,16 @@ function ProductDetail() {
                   <div className="w-12 h-10 flex items-center justify-center border-x border-gray-300 font-semibold text-gray-800">
                     {product?.quantity === 0 ? 0 : quantity}
                   </div>
-                  <button 
-                    onClick={() => setQuantity(prev => Math.min(product?.quantity || 1, prev + 1))}
-                    disabled={product?.quantity === 0 || quantity >= (product?.quantity || 1)}
+                  <button
+                    onClick={() =>
+                      setQuantity((prev) =>
+                        Math.min(product?.quantity || 1, prev + 1),
+                      )
+                    }
+                    disabled={
+                      product?.quantity === 0 ||
+                      quantity >= (product?.quantity || 1)
+                    }
                     className="w-12 h-10 flex items-center justify-center hover:bg-gray-50 text-gray-600 font-bold text-lg disabled:cursor-not-allowed"
                   >
                     +
@@ -156,18 +182,24 @@ function ProductDetail() {
                 </div>
                 <span className="text-sm text-gray-500 font-medium">
                   Kho:{" "}
-                  <span className={`${product?.quantity === 0 ? "text-red-500" : "text-gray-900"} font-bold`}>
+                  <span
+                    className={`${product?.quantity === 0 ? "text-red-500" : "text-gray-900"} font-bold`}
+                  >
                     {product?.quantity}
                   </span>
                 </span>
               </div>
 
               <div className="flex gap-4 mt-auto">
-                <button 
-                  onClick={() => product && product.quantity > 0 && addToCart(product, quantity)}
+                <button
+                  onClick={() =>
+                    product &&
+                    product.quantity > 0 &&
+                    addToCart(product, quantity)
+                  }
                   disabled={product?.quantity === 0}
                   className={`flex-1 border-2 font-bold py-3.5 px-6 rounded-xl transition-all flex items-center justify-center gap-2 ${
-                    product?.quantity === 0 
+                    product?.quantity === 0
                       ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
                       : "bg-white border-indigo-600 text-indigo-600 hover:bg-indigo-50"
                   }`}
@@ -188,7 +220,13 @@ function ProductDetail() {
                   </svg>
                   {product?.quantity === 0 ? "Hết hàng" : "Thêm giỏ hàng"}
                 </button>
-                <button 
+                <button
+                  onClick={() => {
+                    if (product && product.quantity > 0) {
+                      addToCart(product, quantity);
+                      navigate("/cart");
+                    }
+                  }}
                   disabled={product?.quantity === 0}
                   className={`flex-1 font-bold py-3.5 px-6 rounded-xl transition-all ${
                     product?.quantity === 0

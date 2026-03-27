@@ -1,18 +1,28 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "./context/useCart";
 
 function Cart() {
-  const { cartItems, increaseQuantity, decreaseQuantity, removeItem, clearCart } =
-    useCart();
+  const {
+    cartItems,
+    increaseQuantity,
+    decreaseQuantity,
+    removeItem,
+    clearCart,
+  } = useCart();
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [coupon, setCoupon] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState("");
+  const [couponMessage, setCouponMessage] = useState("");
 
   const subtotal = cartItems.reduce(
     (total, item) => total + item.price * item.cartQuantity,
-    0
+    0,
   );
-  const shippingFee = subtotal > 0 ? 30000 : 0; 
-  const total = subtotal + shippingFee;
+  const baseShippingFee = subtotal > 0 ? 30000 : 0;
+  const discount = appliedCoupon === "SAVE10" ? subtotal * 0.1 : 0;
+  const shippingFee = appliedCoupon === "FREESHIP" ? 0 : baseShippingFee;
+  const total = Math.max(0, subtotal + shippingFee - discount);
 
   const handleCheckout = () => {
     const user = localStorage.getItem("user");
@@ -20,12 +30,27 @@ function Cart() {
       alert("Vui lòng đăng nhập để tiến hành thanh toán!");
       return;
     }
-    
+
     // Simulate API call for checkout
     setTimeout(() => {
       clearCart();
       setCheckoutSuccess(true);
     }, 800);
+  };
+
+  const handleApplyCoupon = () => {
+    const normalized = coupon.trim().toUpperCase();
+    if (!normalized) {
+      setCouponMessage("Vui lòng nhập mã giảm giá.");
+      return;
+    }
+    if (normalized === "SAVE10" || normalized === "FREESHIP") {
+      setAppliedCoupon(normalized);
+      setCouponMessage(`Đã áp dụng mã ${normalized} thành công.`);
+      return;
+    }
+    setAppliedCoupon("");
+    setCouponMessage("Mã không hợp lệ. Dùng SAVE10 hoặc FREESHIP.");
   };
 
   const formatPrice = (price: number) => {
@@ -44,8 +69,19 @@ function Cart() {
 
         {cartItems.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-10 text-center">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 mx-auto text-gray-400 mb-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-16 h-16 mx-auto text-gray-400 mb-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+              />
             </svg>
             <h2 className="text-xl font-medium text-gray-900 mb-2">
               Giỏ hàng trống
@@ -54,7 +90,7 @@ function Cart() {
               Bạn chưa có sản phẩm nào trong giỏ hàng.
             </p>
             <Link
-              to="/product" 
+              to="/product"
               className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors"
             >
               Tiếp tục mua sắm
@@ -121,8 +157,19 @@ function Cart() {
                             onClick={() => removeItem(item.id)}
                             className="text-red-500 hover:text-red-700 text-sm font-medium flex items-center gap-1 transition-colors"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="w-5 h-5"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                              />
                             </svg>
                             Xóa
                           </button>
@@ -153,6 +200,37 @@ function Cart() {
                       {formatPrice(shippingFee)}
                     </p>
                   </div>
+                  <div className="flex justify-between">
+                    <p>Giảm giá</p>
+                    <p className="font-medium text-green-600">
+                      -{formatPrice(discount)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="my-4">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">
+                    Mã ưu đãi
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      value={coupon}
+                      onChange={(e) => setCoupon(e.target.value)}
+                      placeholder="SAVE10 hoặc FREESHIP"
+                      className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      className="rounded-lg bg-gray-900 text-white text-sm font-semibold px-3 py-2 hover:bg-black"
+                    >
+                      Áp dụng
+                    </button>
+                  </div>
+                  {couponMessage && (
+                    <p className="text-xs mt-2 text-gray-500">
+                      {couponMessage}
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-center py-4">
@@ -162,13 +240,24 @@ function Cart() {
                   </p>
                 </div>
 
-                <button 
+                <button
                   onClick={handleCheckout}
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl transition duration-200 shadow-md flex justify-center items-center gap-2 mt-2"
                 >
                   Tiến hành thanh toán
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                    />
                   </svg>
                 </button>
 
@@ -190,14 +279,30 @@ function Cart() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center animate-in zoom-in duration-200">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-green-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Thanh toán thành công!</h3>
-            <p className="text-gray-500 text-sm mb-6">Cảm ơn bạn đã mua sắm tại StyleStore. Đơn hàng của bạn đang được xử lý.</p>
-            <Link 
-              to="/product" 
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Thanh toán thành công!
+            </h3>
+            <p className="text-gray-500 text-sm mb-6">
+              Cảm ơn bạn đã mua sắm tại StyleStore. Đơn hàng của bạn đang được
+              xử lý.
+            </p>
+            <Link
+              to="/product"
               className="block w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-xl hover:bg-indigo-700 transition"
             >
               Tiếp tục mua sắm

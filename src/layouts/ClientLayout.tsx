@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
+import { useCart } from "../pages/client/context/useCart";
+import { useWishlist } from "../pages/client/context/useWishlist";
 
 function ClientLayout() {
   const [user, setUser] = useState<any>(() => {
@@ -7,6 +9,8 @@ function ClientLayout() {
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const navigate = useNavigate();
+  const { cartItems } = useCart();
+  const { wishlistItems } = useWishlist();
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -45,7 +49,13 @@ function ClientLayout() {
                   to="cart"
                   className="text-gray-500 hover:text-gray-900 transition"
                 >
-                  Giỏ hàng
+                  Giỏ hàng ({cartItems.length})
+                </Link>
+                <Link
+                  to="wishlist"
+                  className="text-gray-500 hover:text-gray-900 transition"
+                >
+                  Yêu thích ({wishlistItems.length})
                 </Link>
                 <Link
                   to="contact"
@@ -58,7 +68,7 @@ function ClientLayout() {
                 {user ? (
                   <div className="flex items-center gap-4">
                     <span className="text-sm font-semibold text-gray-700">
-                      Hi, {user.email?.split('@')[0]}
+                      Hi, {user.email?.split("@")[0]}
                     </span>
                     <button
                       onClick={handleLogout}

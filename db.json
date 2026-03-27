@@ -268,6 +268,13 @@
       "email": "abc@gmail.com",
       "password": "123456",
       "rePassword": "123456"
+    },
+    {
+      "id": "032d",
+      "username": "vuduyhieu_1008",
+      "email": "halilintarhieu@gmail.com",
+      "password": "098709",
+      "rePassword": "098709"
     }
   ]
 }

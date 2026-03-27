@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import type IProduct from "../../interfaces/IProduct";
 import { useCart } from "./context/useCart";
@@ -135,7 +135,7 @@ const Home: React.FC = () => {
                   <span className="text-xl font-bold text-blue-600">
                     {formatPrice(product.price)}
                   </span>
-                  <button 
+                  <button
                     onClick={() => addToCart(product)}
                     className="bg-gray-100 p-2 rounded-full hover:bg-blue-600 hover:text-white transition-colors"
                   >
@@ -213,11 +213,21 @@ const Home: React.FC = () => {
                   <span className="text-2xl font-bold text-purple-800">
                     {formatPrice(product.price)}
                   </span>
-                  <button 
+                  <button
                     onClick={() => addToCart(product)}
                     className="bg-purple-100 p-2 rounded-full hover:bg-purple-800 hover:text-white transition-colors text-purple-800"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={20}
+                      height={20}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <circle cx={9} cy={21} r={1} />
                       <circle cx={20} cy={21} r={1} />
                       <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
@@ -284,11 +294,21 @@ const Home: React.FC = () => {
                   <span className="text-gray-900 font-bold">
                     {formatPrice(product.price)}
                   </span>
-                  <button 
+                  <button
                     onClick={() => addToCart(product)}
                     className="bg-red-50 p-1.5 rounded-full hover:bg-red-600 hover:text-white transition-colors text-red-600"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width={18}
+                      height={18}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <circle cx={9} cy={21} r={1} />
                       <circle cx={20} cy={21} r={1} />
                       <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />

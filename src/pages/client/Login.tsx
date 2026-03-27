@@ -1,4 +1,3 @@
-import React from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
@@ -23,7 +22,8 @@ function Login() {
       const users = response.data;
 
       const user = users.find(
-        (u: LoginInput) => u.email === data.email && u.password === data.password,
+        (u: LoginInput) =>
+          u.email === data.email && u.password === data.password,
       );
 
       if (user) {

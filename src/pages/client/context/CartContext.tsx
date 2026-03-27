@@ -1,4 +1,4 @@
-import React, { createContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useEffect, useState, type ReactNode } from "react";
 import type IProduct from "../../../interfaces/IProduct";
 
 export interface CartItem extends IProduct {
@@ -15,7 +15,9 @@ interface CartContextType {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const CartContext = createContext<CartContextType | undefined>(undefined);
+export const CartContext = createContext<CartContextType | undefined>(
+  undefined,
+);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
@@ -31,7 +33,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const addToCart = (product: IProduct, quantity: number = 1) => {
     const existingItem = cartItems.find((item) => item.id === product.id);
-    
+
     if (existingItem) {
       if (existingItem.cartQuantity + quantity > product.quantity) {
         alert("Số lượng sản phẩm trong giỏ hàng vượt quá giới hạn tồn kho!");
@@ -41,30 +43,38 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         prevItems.map((item) =>
           item.id === product.id
             ? { ...item, cartQuantity: item.cartQuantity + quantity }
-            : item
-        )
+            : item,
+        ),
       );
     } else {
       if (product.quantity < quantity) {
         alert("Sản phẩm không đủ số lượng trong kho!");
         return;
       }
-      setCartItems((prevItems) => [...prevItems, { ...product, cartQuantity: quantity }]);
+      setCartItems((prevItems) => [
+        ...prevItems,
+        { ...product, cartQuantity: quantity },
+      ]);
     }
     alert("Đã thêm sản phẩm vào giỏ hàng!");
   };
 
   const increaseQuantity = (id: number) => {
     const itemToIncrease = cartItems.find((item) => item.id === id);
-    if (itemToIncrease && itemToIncrease.cartQuantity >= itemToIncrease.quantity) {
+    if (
+      itemToIncrease &&
+      itemToIncrease.cartQuantity >= itemToIncrease.quantity
+    ) {
       alert("Số lượng sản phẩm vượt quá số lượng trong kho!");
       return;
     }
-    
+
     setCartItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, cartQuantity: item.cartQuantity + 1 } : item
-      )
+        item.id === id
+          ? { ...item, cartQuantity: item.cartQuantity + 1 }
+          : item,
+      ),
     );
   };
 
@@ -73,8 +83,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       prev.map((item) =>
         item.id === id && item.cartQuantity > 1
           ? { ...item, cartQuantity: item.cartQuantity - 1 }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
@@ -84,7 +94,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <CartContext.Provider
-      value={{ cartItems, addToCart, increaseQuantity, decreaseQuantity, removeItem, clearCart }}
+      value={{
+        cartItems,
+        addToCart,
+        increaseQuantity,
+        decreaseQuantity,
+        removeItem,
+        clearCart,
+      }}
     >
       {children}
     </CartContext.Provider>
